@@ -133,3 +133,4 @@ dmypy.json
 reports/
 logs/
 ezgen.db
+tmp/

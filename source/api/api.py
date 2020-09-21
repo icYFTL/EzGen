@@ -1,13 +1,15 @@
-from flask import request
+from flask import request, send_file
 from core import app, theory
 import json
 from source.database.methods import *
 from source.main.handler.builder import Builder
+import io
+import base64
 
 
 @app.route('/ezgen/api/generate', methods=['GET'])
 def on_generate_get():
-    return 'Use post request instead', 405
+    return '<h1>Use POST request instead GET</h1>', 405
 
 
 @app.route('/ezgen/api', methods=['GET', 'POST'])
@@ -17,49 +19,56 @@ def root():
 
 @app.route('/ezgen/api/generate', methods=['POST'])
 def on_generate():
-    data = json.loads(request.data)
+    if request.data:
+        data = json.loads(request.data)
+    else:
+        return 'Empty JSON passed.', 400
     if not data.get('token'):
         return 'Empty token', 400
 
-    if not get_user(request.remote_addr):
-        return 'Invalid token', 400
+    _user = get_user(request.remote_addr)
 
-    important_keys = ['group_name', 'student_snp', 'teacher_snp', 'year', 'prac_number', 'target_content',
-                 'teor_content', 'conclusion_content', 'literature_used_content']
+    if not _user:
+        return 'You are not registered in EzGen system.\nUse /ezgen/api/get_token', 400
+    elif _user.hash != data['token']:
+        return 'Invalid token.\nUse /ezgen/api/get_token', 400
+
+    important_keys = ['group_name', 'student_snp', 'teacher_snp', 'year', 'prac_number', 'code']
 
     for key in important_keys:
         if key not in data:
             return f'Empty key: "{key}"', 400
 
-    if not request.files:
-        return 'Zipped code didn\'t passed', 400
-
-    file = request.files['code']
-
-    if file.name.split('.'):
-        if file.name.split('.')[-1] != 'zip':
-            return 'File\'s extension is not .zip', 400
-    else:
-        return 'File\'s extension is not .zip', 400
-
     builder = Builder(data['token'])
 
+    file = io.BytesIO(base64.decodebytes(data['code'].encode('UTF-8')))
 
-    titul = builder.generate_titul(
+    if not builder.is_zip_file(file):
+        return 'File\'s extension is not .zip', 400
+
+    builder.generate_titul(
         group_name=data['group_name'],
         student_snp=data['student_snp'],
         teacher_snp=data['teacher_snp'],
         year=data['year']
     )
 
-    prac_number = int(data['prac_number'])
+    prac_number = int(data['prac_number']) - 1
 
-    prac_pages = builder.generate_prac_page(
-        prac_number=prac_number,
-        target_content=theory[prac_number]['target'] if not data.get('target_content') else data.get('target_content'),
-        teor_content=theory[prac_number]['teor_content'] if not data.get('teor_content') else data.get('teor_content')
+    builder.generate_prac_page(
+        prac_number=prac_number + 1,
+        target_content=theory['practice'][prac_number]['target'] if not data.get('target_content') else data.get(
+            'target_content'),
+        teor_content=theory['practice'][prac_number]['theory'] if not data.get('teor_content') else data.get('theory'),
+        code_blocks=file,
+        conclusion_content=theory['practice'][prac_number]['conclusion'] if not data.get(
+            'conclusion_content') else data.get('conclusion_content'),
+        literature_used_content=theory['practice'][prac_number]['literature'] if not data.get(
+            'literature_used_content') else data.get('literature_used_content')
 
     )
+
+    return send_file(builder.generate_result(), attachment_filename='result.zip')
 
 
 @app.route('/ezgen/api/get_token', methods=['GET'])

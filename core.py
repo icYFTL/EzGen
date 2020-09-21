@@ -12,7 +12,8 @@ if not path.exists('logs/'):
 logging.basicConfig(filename='logs/ezgen.log', level=logging.INFO,
                     format=u'%(asctime)-15s | [%(name)s] %(levelname)s => %(message)s')
 
-theory = json.load(open('source/static/theory.json', 'r'))
+theory = json.load(open('source/static/theory.json', 'r', encoding='UTF-8'))
+config = json.load(open('config.json', 'r'))
 
 app = Flask(__name__)
 
