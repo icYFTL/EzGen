@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Misc
+.idea/
+reports/
+logs/
+ezgen.db
