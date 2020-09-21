@@ -1,0 +1,10 @@
+version: "3"
+services:
+  server:
+    image: ezgen
+    build: .
+    command: python3 EzGen.py
+    ports:
+      - 8015:8015
+    network_mode: host
+    container_name: ezgen
