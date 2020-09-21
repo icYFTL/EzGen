@@ -34,6 +34,7 @@ def on_generate():
         return 'Invalid token.\nUse /ezgen/api/get_token', 400
 
     important_keys = ['group_name', 'student_snp', 'teacher_snp', 'year', 'prac_number', 'code']
+    optional_keys = ['target_content', 'teor_content', 'conclusion_content', 'literature_used_content']
 
     for key in important_keys:
         if key not in data:
@@ -54,6 +55,9 @@ def on_generate():
     )
 
     prac_number = int(data['prac_number']) - 1
+
+    if prac_number + 1 > len(theory['practice']) and [x for x in data.keys() if x not in optional_keys]:
+        return f'Can\'t handle prac with {prac_number} number.\nOptional args needed.', 418
 
     builder.generate_prac_page(
         prac_number=prac_number + 1,
