@@ -101,11 +101,12 @@ class Builder:
 
         for root, dirs, files in walk(file_path):
             for file in files:
-                for block in self.__get_objects_from_java(open(path.join(root, file), 'r').read()):
-                    code_blocks.append(self.create_code_block(description=f'Блок {pic_num}',
-                                                              code='\n\n' + block + '\n\n'
-                                                              ))
-                    pic_num += 1
+                if file.split('.')[-1] == 'java' and not file.startswith('.'):
+                    for block in self.__get_objects_from_java(open(path.join(root, file), 'r').read()):
+                        code_blocks.append(self.create_code_block(description=f'Блок {pic_num}',
+                                                                  code='\n\n' + block + '\n\n'
+                                                                  ))
+                        pic_num += 1
 
         return code_blocks
 
