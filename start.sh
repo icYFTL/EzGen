@@ -5,8 +5,8 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
-sudo docker cp ezgen:/ezgen.db ./
-sudo docker cp ezgen:/tmp/ ./tmp
+sudo docker cp ezgen:/opt/app/ezgen.db ./
+sudo docker cp ezgen:/opt/app/tmp/ ./tmp
 
 docker-compose down
 docker-compose up --build --force-recreate -d
