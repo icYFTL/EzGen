@@ -43,7 +43,8 @@ def on_generate():
     builder = Builder(data['token'])
 
     file = io.BytesIO(base64.decodebytes(data['code'].encode('UTF-8')))
-
+    if len(file.read()) > 2097152:
+        return 'Too large file.\nMax file size: 2 MB', 406
     if not builder.is_zip_file(file):
         return 'File\'s extension is not .zip', 400
 
@@ -57,7 +58,7 @@ def on_generate():
     prac_number = int(data['prac_number']) - 1
 
     if prac_number + 1 > len(theory['practice']) and [x for x in data.keys() if x not in optional_keys]:
-        return f'Can\'t handle prac with {prac_number} number.\nOptional args needed.', 418
+        return f'Can\'t handle prac with {prac_number + 1} number.\nOptional args needed.', 418
 
     builder.generate_prac_page(
         prac_number=prac_number + 1,

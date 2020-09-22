@@ -13,7 +13,7 @@ data = json.dumps({
 }, ensure_ascii=False)
 
 
-r = requests.post('https://icyftl/ezgen/api/generate', data=data.encode('UTF-8'))
+r = requests.post('https://icyftl.ru/ezgen/api/generate', data=data.encode('UTF-8'))
 if r.status_code != 200:
     print(r.text)
     exit()
