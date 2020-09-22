@@ -134,3 +134,4 @@ reports/
 logs/
 ezgen.db
 tmp/
+.DS_Store
