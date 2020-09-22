@@ -7,7 +7,6 @@ from shutil import rmtree
 from datetime import datetime
 import re
 import logging
-from source.static.methods import define_tmp_path
 
 
 class Builder:
@@ -17,22 +16,22 @@ class Builder:
         self.logger = logging.getLogger('Builder')
 
     def generate_result(self):
-        fp = zipfile.ZipFile(path.join(define_tmp_path(), self.token, str(int(datetime.now().timestamp()))), 'a')
+        fp = zipfile.ZipFile(path.join('tmp', self.token, str(int(datetime.now().timestamp()))), 'a')
         for page in self.pages:
-            file = path.join(define_tmp_path(), self.token, page['filename'])
+            file = path.join('tmp', self.token, page['filename'])
             open(file, 'wb').write(page['source'].encode('UTF-8'))
             fp.write(file)
 
         fp.close()
-        return open(path.join(define_tmp_path(), self.token, str(int(datetime.now().timestamp()))), 'rb')
+        return open(path.join('tmp', self.token, str(int(datetime.now().timestamp()))), 'rb')
 
     def is_zip_file(self, file: io.BytesIO) -> bool:
         try:
-            if not path.exists(path.join(define_tmp_path(), self.token, 'tmp')):
-                makedirs(path.join(define_tmp_path(), self.token, 'tmp'))
+            if not path.exists(path.join('tmp', self.token, 'tmp')):
+                makedirs(path.join('tmp', self.token, 'tmp'))
             with zipfile.ZipFile(file) as _z:
-                _z.extractall(path.join(define_tmp_path(), self.token, 'tmp'))
-            rmtree(path.join(define_tmp_path(), self.token, 'tmp'))
+                _z.extractall(path.join('tmp', self.token, 'tmp'))
+            rmtree(path.join('tmp', self.token, 'tmp'))
             return True
         except Exception as e:
             self.logger.warning(e)
@@ -75,10 +74,10 @@ class Builder:
     def code_handler(self, zip_archive: io.BytesIO):
         box = str(int(datetime.now().timestamp()))
 
-        root_path = path.join(define_tmp_path(), self.token)
+        root_path = path.join('tmp', self.token)
         file_path = path.join(root_path, box + '.zip')
 
-        if not path.exists(define_tmp_path()):
+        if not path.exists('tmp'):
             makedirs(root_path)
 
         with zipfile.ZipFile(zip_archive, 'r') as _zip:

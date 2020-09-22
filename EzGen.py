@@ -1,3 +1,4 @@
 from source.api.api import *
+from core import config
 
-app.run(port=8080, debug=True)
+app.run(host=config['host'], port=config['port'], debug=True)

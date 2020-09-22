@@ -17,7 +17,7 @@ config = json.load(open('config.json', 'r'))
 
 app = Flask(__name__)
 
-engine = create_engine(f'sqlite:///ezgen.db', echo=False)
+engine = create_engine(f'sqlite:///{config["db_name"]}', echo=False)
 Base.metadata.create_all(engine, checkfirst=True)
 
 Session = sessionmaker(bind=engine)
