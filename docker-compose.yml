@@ -10,7 +10,7 @@ services:
     container_name: ezgen_api
   telegram:
     image: ezgen_telegram
-      build: ./telegram
-      command: python3 EzGenTG.py
-      container_name: ezgen_telegram
+    build: ./telegram
+    command: python3 EzGenTG.py
+    container_name: ezgen_telegram
   
