@@ -17,7 +17,7 @@
       "student_snp_button": "My SNP",
       "teacher_snp_button": "Teacher's SNP",
       "all_info": "All info",
-      "sector_update": "Update info:",
+      "sector_update": "Update info:\n{info}",
       "cancel": "Back",
       "group_request": "Type your group:",
       "student_snp_request": "Type your SNP:",
@@ -28,7 +28,11 @@
       "update_info_success": "Updated successfully",
       "smth_went_wrong": "Something went wrong.\nTry again or contact admin",
       "basic_info_did_not_pass": "Basic info didn't pass.\nSpecify your info by 'Update my info' button",
-      "already_started": "Already started"
+      "already_started": "Already started",
+      "group": "Your group: {group}",
+      "student_snp": "Your SNP: {snp}",
+      "teacher_snp": "Teacher's SNP: {snp}"
+
     },
     "ru": {
       "selected_language": "Выбранный язык: {lang}",
@@ -45,7 +49,7 @@
       "student_snp_button": "Моё ФИО",
       "teacher_snp_button": "ФИО преподавателя",
       "all_info": "Всю информацию",
-      "sector_update": "Изменить информацию:",
+      "sector_update": "Изменить информацию:\n{info}",
       "cancel": "Назад",
       "group_request": "Введите вашу группу:",
       "student_snp_request": "Введите ваше ФИО:",
@@ -56,7 +60,10 @@
       "update_info_success": "Успешно обновлено",
       "smth_went_wrong": "Что-то пошло не так.\nПопробуйте еще раз или напишите админу",
       "basic_info_did_not_pass": "Базовая информация не указана.\nУкажите ее, через кнопку 'Изменить информацию о себе'",
-      "already_started": "Бот уже запущен"
+      "already_started": "Бот уже запущен",
+      "group": "Ваша группа: {group}",
+      "student_snp": "Ваше ФИО: {snp}",
+      "teacher_snp": "ФИО преподавателя: {snp}"
     }
   },
   "db_name": "telegram.db"

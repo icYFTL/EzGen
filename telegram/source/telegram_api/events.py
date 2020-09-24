@@ -105,7 +105,7 @@ async def on_any(message: Message):
             elif user.event == 'request.all.student':
                 if re.match(r'^[А-Яа-я .\-]+$', message.text):
                     set_student(message.text, user)
-                    set_event('request.all.teacher_snp', user)
+                    set_event('request.all.teacher', user)
                     await message.answer(text[user.language]['teacher_snp_request'])
                 else:
                     raise ValueError
@@ -170,7 +170,22 @@ async def menu_handler(call: CallbackQuery):
     user: User = get_user(id=call.from_user.id)
 
     if event == 'update_info':
-        await call.message.edit_text(text[user.language]['sector_update'])
+        await call.message.edit_text(text[user.language]['sector_update'].format(
+            info='''{group_text}
+{student_text}
+{teacher_text}'''.format(
+                group_text=text[user.language]['group'].format(
+                    group=user.group or 'None'
+                ),
+                student_text=text[user.language]['student_snp'].format(
+                    snp=user.student_snp or 'None'
+                ),
+                teacher_text=text[user.language]['teacher_snp'].format(
+                    snp=user.teacher_snp or 'None'
+                )
+
+            )
+        ))
         await call.message.edit_reply_markup(sector_update(user.language))
     elif event == 'new_prac':
         if not user.group or not user.student_snp or not user.teacher_snp:
@@ -195,19 +210,31 @@ async def update_sector(call: CallbackQuery):
     if sector == 'all':
         set_event('request.all', user)
         await call.message.edit_text(text[user.language]['group_request'])
-        await call.message.edit_reply_markup(None)
+        try:
+            await call.message.edit_reply_markup(None)
+        except:
+            pass
     elif sector == 'group':
         set_event('request.group', user)
         await call.message.edit_text(text[user.language]['group_request'])
-        await call.message.edit_reply_markup(None)
+        try:
+            await call.message.edit_reply_markup(None)
+        except:
+            pass
     elif sector == 'student':
         set_event('request.student', user)
         await call.message.edit_text(text[user.language]['student_snp_request'])
-        await call.message.edit_reply_markup(None)
+        try:
+            await call.message.edit_reply_markup(None)
+        except:
+            pass
     elif sector == 'teacher':
         set_event('request.teacher', user)
         await call.message.edit_text(text[user.language]['teacher_snp_request'])
-        await call.message.edit_reply_markup(None)
+        try:
+            await call.message.edit_reply_markup(None)
+        except:
+            pass
 
 
 @dp.callback_query_handler(text_contains='lang')
