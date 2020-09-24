@@ -175,6 +175,7 @@ async def menu_handler(call: CallbackQuery):
     elif event == 'new_prac':
         if not user.group or not user.student_snp or not user.teacher_snp:
             await call.message.edit_text(text[user.language]['basic_info_did_not_pass'])
+            await call.message.edit_reply_markup(menu(user.language))
             return
         await call.message.edit_text(text[user.language]['prac_num_request'])
         try:
