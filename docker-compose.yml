@@ -1,10 +1,16 @@
 version: "3"
 services:
-  server:
-    image: ezgen
-    build: .
+  api:
+    image: ezgen_api
+    build: ./api
     command: python3 EzGen.py
     ports:
       - 8015:8015
     network_mode: host
-    container_name: ezgen
+    container_name: ezgen_api
+  telegram:
+    image: ezgen_telegram
+      build: ./telegram
+      command: python3 EzGenTG.py
+      container_name: ezgen_telegram
+  

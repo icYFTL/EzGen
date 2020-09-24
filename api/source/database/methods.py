@@ -6,7 +6,7 @@ from random import randint
 
 def get_user(ip: str) -> User:
     _res = [x for x in Session().query(User).filter(User.ip == ip)]
-    return [x for x in Session().query(User).filter(User.ip == ip)][0] if _res else []
+    return _res[0] if _res else None
 
 
 def add_user(ip: str) -> User:
