@@ -6,6 +6,7 @@ import re
 from source.static.staticData import storage
 from source.ezgen_api.ezGenApi import EzGenAPI
 from base64 import encodebytes
+from source.telegram_api.events import *
 
 
 @dp.message_handler(commands=['start'])
@@ -71,29 +72,21 @@ async def code_handler(message: Message):
 async def on_any(message: Message):
     user: User = get_user(id=message.from_user.id)
 
-    if user.event == 'activation':
-        if not user.hash:
-            if len(message.text) == 32:
-                if re.match(r'^[a-z0-9]+$', message.text):
-                    if is_hash_unique(message.text):
-                        set_hash(message.text, user)
-                        set_event('', user)
-                        set_status('active', user)
-                        await message.answer(text[user.language]['welcome'].format(user=message.from_user.full_name),
-                                             reply_markup=menu(user.language))
-                    else:
-                        await message.answer(text[user.language]['clever_user'])
-                else:
-                    await message.answer(text[user.language]['invalid_token'])
+    for record in storage:
+        if record['user'] == user:
+            reply = record['event'].execute()
+            if reply[1] == 0:
+                await message.answer(
+                    text=reply[0]
+                )
             else:
-                await message.answer(text[user.language]['invalid_token'])
-        elif user.hash == message.text:
-            set_event('', user)
-            set_status('active', user)
-            await clear(message, user)
-        else:
-            await message.answer(text[user.language]['activation_wait'])
-    elif user.event.startswith('request'):
+                await message.answer(
+                    text=reply[0],
+                    reply_markup=reply[1]
+                )
+
+
+    if user.event.startswith('request'):
         try:
             if user.event == 'request.all':
                 if re.match(r'^[А-Яа-я0-9 \-.]+$', message.text):
@@ -253,7 +246,13 @@ async def selecting_language(call: CallbackQuery):
     await call.answer(text=answer)
 
     if user.status == 'inactive':
-        set_event('activation', user)
+        storage.append({
+            'user': user,
+            'event': Activation(
+                instance=call,
+                user=user
+            )
+        })
         await call.message.edit_text(text=text[lang]['activate_text'], parse_mode='MarkdownV2')
         await call.message.edit_reply_markup(reply_markup=None)
     else:

@@ -135,3 +135,4 @@ logs/
 ezgen.db
 tmp/
 .DS_Store
+config.json

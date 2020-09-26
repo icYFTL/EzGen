@@ -17,7 +17,14 @@ config = json.load(open('config.json', 'r'))
 
 app = Flask(__name__)
 
-engine = create_engine(f'sqlite:///{config["db_name"]}', echo=False)
+connect_str = 'postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}'
+engine = create_engine(connect_str.format(
+    user=config['db_user'],
+    password=config['db_password'],
+    host=config['db_host'],
+    name=config['db_name'],
+    port=config['db_port']
+), echo=False)
 Base.metadata.create_all(engine, checkfirst=True)
 
 Session = sessionmaker(bind=engine)

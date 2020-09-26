@@ -19,7 +19,7 @@ class EzGenAPI:
             'year': datetime.now().year,
             'prac_number': self.prac_num,
             'code': self.code,
-            'token': self.user.hash
+            'token': self.user.api_user.token
         }, ensure_ascii=False))
         if r.status_code != 200:
             return False, r.text

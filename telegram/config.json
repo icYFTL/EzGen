@@ -11,7 +11,6 @@
       "change_lang_button": "Switch language",
       "invalid_token": "Invalid token",
       "welcome": "Welcome, {user}",
-      "activation_wait": "Waiting for token...",
       "clever_user": "You're clever. But I am cleverer",
       "group_button": "Group",
       "student_snp_button": "My SNP",
@@ -43,7 +42,6 @@
       "change_lang_button": "Изменить язык",
       "invalid_token": "Неправильный токен",
       "welcome": "Добро пожаловать, {user}",
-      "activation_wait": "Ожидание токена...",
       "clever_user": "Ты умен. Но я умнее.",
       "group_button": "Группа",
       "student_snp_button": "Моё ФИО",
@@ -65,6 +63,5 @@
       "student_snp": "Ваше ФИО: {snp}",
       "teacher_snp": "ФИО преподавателя: {snp}"
     }
-  },
-  "db_name": "telegram.db"
+  }
 }

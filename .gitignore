@@ -136,4 +136,4 @@ ezgen.db
 tmp/
 .DS_Store
 telegram.db
-config.json
+db_config.json
