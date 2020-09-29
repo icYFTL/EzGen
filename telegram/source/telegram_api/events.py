@@ -6,7 +6,8 @@ import re
 from source.static.staticData import storage
 from source.ezgen_api.ezGenApi import EzGenAPI
 from base64 import encodebytes
-from source.telegram_api.events import *
+from source.telegram_api._events import *
+from source.telegram_api.types.request import *
 
 
 @dp.message_handler(commands=['start'])
@@ -14,6 +15,8 @@ async def on_start(message: Message):
     user: User = get_user(message.chat.id)
     if not user:
         add_user(id=message.from_user.id, chat_id=message.chat.id)
+        await message.answer(text=config['start_msg'], reply_markup=lang_choice)
+    elif user.status != 'active':
         await message.answer(text=config['start_msg'], reply_markup=lang_choice)
     else:
         await message.answer(text=text[user.language]['already_started'], reply_markup=menu(
@@ -70,11 +73,22 @@ async def code_handler(message: Message):
 
 @dp.message_handler()
 async def on_any(message: Message):
+    if message.from_user.id == bot.id:
+        return
     user: User = get_user(id=message.from_user.id)
 
     for record in storage:
-        if record['user'] == user:
-            reply = record['event'].execute()
+        if record['user'].id == user.id:
+            if record.get('action'):
+                await record['action'](*record['args'])
+            reply = record['event'](
+                user=user,
+                instance=message
+            ).execute()
+
+            if not reply[0]:
+                return
+
             if reply[1] == 0:
                 await message.answer(
                     text=reply[0]
@@ -84,63 +98,12 @@ async def on_any(message: Message):
                     text=reply[0],
                     reply_markup=reply[1]
                 )
-
-
-    if user.event.startswith('request'):
-        try:
-            if user.event == 'request.all':
-                if re.match(r'^[А-Яа-я0-9 \-.]+$', message.text):
-                    set_group(message.text, user)
-                    set_event('request.all.student', user)
-                    await message.answer(text[user.language]['student_snp_request'])
-                else:
-                    raise ValueError
-            elif user.event == 'request.all.student':
-                if re.match(r'^[А-Яа-я .\-]+$', message.text):
-                    set_student(message.text, user)
-                    set_event('request.all.teacher', user)
-                    await message.answer(text[user.language]['teacher_snp_request'])
-                else:
-                    raise ValueError
-            elif user.event == 'request.all.teacher':
-                if re.match(r'^[А-Яа-я .\-]+$', message.text):
-                    set_teacher(message.text, user)
-                    await message.answer(text[user.language]['update_info_success'])
-                    await clear(message, user)
-                else:
-                    raise ValueError
-            elif user.event == 'request.group':
-                if re.match(r'^[А-Яа-я0-9 \-.]+$', message.text):
-                    set_group(message.text, user)
-                    await message.answer(text[user.language]['update_info_success'])
-                    await clear(message, user)
-                else:
-                    raise ValueError
-            elif user.event == 'request.student':
-                if re.match(r'^[А-Яа-я .\-]+$', message.text):
-                    set_student(message.text, user)
-                    await message.answer(text[user.language]['update_info_success'])
-                    await clear(message, user)
-                else:
-                    raise ValueError
-            elif user.event == 'request.teacher':
-                if re.match(r'^[А-Яа-я .\-]+$', message.text):
-                    set_teacher(message.text, user)
-                    await message.answer(text[user.language]['update_info_success'])
-                    await clear(message, user)
-                else:
-                    raise ValueError
-            elif user.event == 'request.prac_num':
-                if re.match(r'^[0-9]+$', message.text):
-                    set_event('request.files', user)
-                    storage.append({'user': user, 'prac_num': int(message.text)})
-                    await message.answer(text[user.language]['code_request'])
-                else:
-                    raise ValueError
-
-        except:
-            await clear(message, user)
-            await message.answer(text[user.language]['invalid_info'])
+            if isinstance(record['event'], Activation):
+                if reply[2]:
+                    storage.remove(record)
+            else:
+                storage.remove(record)
+            break
 
 
 @dp.callback_query_handler(text_contains='cancel')
@@ -185,12 +148,19 @@ async def menu_handler(call: CallbackQuery):
             await call.message.edit_text(text[user.language]['basic_info_did_not_pass'])
             await call.message.edit_reply_markup(menu(user.language))
             return
-        await call.message.edit_text(text[user.language]['prac_num_request'])
+        await call.message.edit_text(PracNum.request(user.language))
+        storage.append({
+            'user': user,
+            'event': Request(
+                user=user,
+                instance=call,
+                rtype=PracNum
+            )
+        })
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
-        set_event('request.prac_num', user)
 
 
 @dp.callback_query_handler(text_contains='sector')
@@ -201,28 +171,56 @@ async def update_sector(call: CallbackQuery):
     user: User = get_user(id=call.from_user.id)
 
     if sector == 'all':
-        set_event('request.all', user)
+        storage.append({
+            'user': user,
+            'event': Request(
+                user=user,
+                instance=call,
+                rtype=All
+            )
+        })
         await call.message.edit_text(text[user.language]['group_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'group':
-        set_event('request.group', user)
+        storage.append({
+            'user': user,
+            'event': Request(
+                user=user,
+                instance=call,
+                rtype=Group
+            )
+        })
         await call.message.edit_text(text[user.language]['group_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'student':
-        set_event('request.student', user)
+        storage.append({
+            'user': user,
+            'event': Request(
+                user=user,
+                instance=call,
+                rtype=Student
+            )
+        })
         await call.message.edit_text(text[user.language]['student_snp_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'teacher':
-        set_event('request.teacher', user)
+        storage.append({
+            'user': user,
+            'event': Request(
+                user=user,
+                instance=call,
+                rtype=Teacher
+            )
+        })
         await call.message.edit_text(text[user.language]['teacher_snp_request'])
         try:
             await call.message.edit_reply_markup(None)
@@ -248,12 +246,16 @@ async def selecting_language(call: CallbackQuery):
     if user.status == 'inactive':
         storage.append({
             'user': user,
-            'event': Activation(
-                instance=call,
-                user=user
-            )
+            'event': Activation
         })
         await call.message.edit_text(text=text[lang]['activate_text'], parse_mode='MarkdownV2')
-        await call.message.edit_reply_markup(reply_markup=None)
+        try:
+            await call.message.edit_reply_markup(reply_markup=None)
+        except:
+            pass
+        storage.append({
+            'user': user,
+            'event': Activation
+        })
     else:
         await clear(call, user)

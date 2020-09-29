@@ -1,4 +1,4 @@
 aiogram
 requests-async
 sqlalchemy
-psycopg2-binary
+psycopg2

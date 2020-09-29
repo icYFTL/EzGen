@@ -1,13 +1,13 @@
-from source.telegram_api.events import Event
+from source.telegram_api._events import Event
 from source.telegram_api.checks import token_check
 from source.database.methods import set_status
 from core import text
 from source.telegram_api.keyboards import menu
 
 
-class Request(Event):
+class Activation(Event):
     def __init__(self, **kwargs):
-        self.name = 'Request'
+        self.name = 'Activation'
         super().__init__(**kwargs)
 
     def execute(self) -> tuple:
@@ -17,11 +17,11 @@ class Request(Event):
         reply = None
         if token_check(self.instance.text):
             set_status('active', self.user)
-            reply = text[self.user.language]['welcome'].format(self.instance.from_user.full_name), menu(self.user.language)
+            reply = text[self.user.language]['welcome'].format(user=self.instance.from_user.full_name), menu(self.user.language), True
         else:
-            reply = text[self.user.language]['invalid_token'], 0
+            reply = text[self.user.language]['invalid_token'], 0, False
 
         return reply
 
     def __repr__(self):
-        return f'<Event name={self.name} user={self.user} type=>'
+        return f'<Event name={self.name} user={self.user}>'

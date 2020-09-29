@@ -23,7 +23,7 @@
       "teacher_snp_request": "Type teacher's SNP:",
       "prac_num_request": "Type practice number:",
       "code_request": "Attach .zip archive with your code\nImportant: there're only .java files in archive",
-      "invalid_info": "Invalid info passed",
+      "invalid_info": "Invalid {info} passed",
       "update_info_success": "Updated successfully",
       "smth_went_wrong": "Something went wrong.\nTry again or contact admin",
       "basic_info_did_not_pass": "Basic info didn't pass.\nSpecify your info by 'Update my info' button",
