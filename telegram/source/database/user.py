@@ -16,7 +16,8 @@ class User(Base):
     student_snp = Column(String, nullable=True)
     teacher_snp = Column(String, nullable=True)
     event = Column(String, nullable=True)
-    api_user = relationship('ApiUser', uselist=False, backref='telegram_users')
+    token = Column(String, nullable=True)
+    # api_user = relationship('ApiUser', uselist=False, backref='telegram_users')
 
     def __init__(self, id: int, chat_id: int, status: str):
         self.id = id

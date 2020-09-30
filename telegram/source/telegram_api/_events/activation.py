@@ -1,6 +1,6 @@
 from source.telegram_api._events import Event
 from source.telegram_api.checks import token_check
-from source.database.methods import set_status
+from source.database.methods import set_status, set_token
 from core import text
 from source.telegram_api.keyboards import main_menu
 from source.static.staticData import events_storage
@@ -18,6 +18,7 @@ class Activation(Event):
 
         if token_check(self.message.text):
             set_status('active', self.user)
+            set_token(self.message.text, self.user)
             self.__status = True, text[self.user.language]['welcome'].format(
                 user=self.message.from_user.full_name), main_menu(self.user.language)
         else:

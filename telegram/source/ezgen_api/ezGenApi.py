@@ -2,6 +2,7 @@ import http3
 from source.database.user import User
 from datetime import datetime
 import json
+from source.database.methods import get_api_user
 
 
 class EzGenAPI:
@@ -19,7 +20,7 @@ class EzGenAPI:
             'year': datetime.now().year,
             'prac_number': self.prac_num,
             'code': self.code,
-            'token': self.user.api_user.token
+            'token': self.user.token
         }, ensure_ascii=False))
         if r.status_code != 200:
             return False, r.text

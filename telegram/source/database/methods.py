@@ -1,5 +1,6 @@
 from core import Session
 from source.database.user import User
+from source.database.apiUser import ApiUser
 
 
 async def get_user(chat_id=None, id=None):
@@ -15,8 +16,15 @@ async def get_user(chat_id=None, id=None):
         return _res[0] if _res else None
 
 
-def is_hash_unique(hash: str) -> bool:
-    return not bool([x for x in Session().query(User).filter(User.hash == hash)])
+async def get_api_user(vk_user_id=None, token=None) -> list:
+    if not vk_user_id and not token:
+        return []
+
+    _sess = Session()
+    if vk_user_id:
+        return [x for x in Session().query(ApiUser).filter(ApiUser.vk_user_id == vk_user_id)]
+    else:
+        return [x for x in Session().query(ApiUser).filter(ApiUser.token == token)]
 
 
 async def add_user(id: int, chat_id: int, status="inactive") -> User:
@@ -61,3 +69,6 @@ def set_teacher(teacher: str, user: User) -> None:
 
 def set_event(event: str, user: User) -> None:
     set_args({User.event: event}, user)
+
+def set_token(token: str, user: User) -> None:
+    set_args({User.token: token}, user)
