@@ -12,7 +12,7 @@ lang_choice = InlineKeyboardMarkup(
 )
 
 
-def activation(lang: str) -> InlineKeyboardMarkup:
+def activation_menu(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -23,7 +23,7 @@ def activation(lang: str) -> InlineKeyboardMarkup:
     )
 
 
-def sector_update(lang: str) -> InlineKeyboardMarkup:
+def sector_update_menu(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -47,7 +47,7 @@ def sector_update(lang: str) -> InlineKeyboardMarkup:
     )
 
 
-def menu(lang: str) -> InlineKeyboardMarkup:
+def main_menu(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

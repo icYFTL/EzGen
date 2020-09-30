@@ -5,7 +5,11 @@ import re
 class RType(object):
     @staticmethod
     def regex() -> re:
-        pass
+        return re.compile('')
+
+    @staticmethod
+    def request(lang: str) -> str:
+        return ''
 
 
 class Token(RType):
@@ -31,7 +35,11 @@ class Group(RType):
 class SNP(RType):
     @staticmethod
     def regex() -> re:
-        return re.compile(r'^([А-Яа-я\- .]+)\s([А-Я.]{2}){2}$')
+        return re.compile(r'^([А-Яа-я\- .]+)$')
+
+    @staticmethod
+    def request(lang: str) -> str:
+        return ''
 
 
 class Student(SNP):

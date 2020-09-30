@@ -2,7 +2,7 @@ from core import Session
 from source.database.user import User
 
 
-def get_user(chat_id=None, id=None):
+async def get_user(chat_id=None, id=None):
     if not chat_id and not id:
         return None
 
@@ -19,7 +19,7 @@ def is_hash_unique(hash: str) -> bool:
     return not bool([x for x in Session().query(User).filter(User.hash == hash)])
 
 
-def add_user(id: int, chat_id: int, status="inactive") -> User:
+async def add_user(id: int, chat_id: int, status="inactive") -> User:
     _user = User(id=id, chat_id=chat_id, status=status)
     _sess = Session()
     _sess.add(_user)

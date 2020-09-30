@@ -3,46 +3,44 @@ from aiogram.types import Message, CallbackQuery
 from source.database.methods import *
 from source.telegram_api.keyboards import *
 import re
-from source.static.staticData import storage
+from source.static.staticData import events_storage
 from source.ezgen_api.ezGenApi import EzGenAPI
 from base64 import encodebytes
 from source.telegram_api._events import *
 from source.telegram_api.types.request import *
+from source.static.methods import *
 
 
 @dp.message_handler(commands=['start'])
 async def on_start(message: Message):
-    user: User = get_user(message.chat.id)
-    if not user:
-        add_user(id=message.from_user.id, chat_id=message.chat.id)
-        await message.answer(text=config['start_msg'], reply_markup=lang_choice)
-    elif user.status != 'active':
+    user: User = await get_user(message.chat.id)
+    if not user or user.status == 'inactive':
+        await add_user(id=message.from_user.id, chat_id=message.chat.id)
         await message.answer(text=config['start_msg'], reply_markup=lang_choice)
     else:
-        await message.answer(text=text[user.language]['already_started'], reply_markup=menu(
+        await message.answer(text=text[user.language]['welcome'].format(user=message.from_user.full_name),
+                             reply_markup=main_menu(
             user.language
         ))
 
 
 async def clear(instance, user: User) -> None:
-    set_event('', user)
     try:
         await instance.message.edit_text(text[user.language]['welcome'].format(user=instance.from_user.full_name))
-        await instance.message.edit_reply_markup(menu(user.language))
+        await instance.message.edit_reply_markup(main_menu(user.language))
     except:
         await instance.answer(text[user.language]['welcome'].format(user=instance.from_user.full_name),
-                              reply_markup=menu(user.language))
+                              reply_markup=main_menu(user.language))
 
 
 @dp.message_handler(content_types=['document'])
 async def code_handler(message: Message):
-    user: User = get_user(id=message.from_user.id)
-    if user.event == 'request.files':
-
+    user: User = await get_user(id=message.from_user.id)
+    if [x for x in get_events(user_id=user.id) if x['event'] == 'request.code']:
         file = await bot.get_file(message.document.file_id)
         io_object = await bot.download_file(file.file_path)
         try:
-            prac_num = [x['prac_num'] for x in storage if x['user'].id == user.id][0]
+            prac_num = get_report(message.from_user.id)['prac_num']
         except:
             await message.answer(text[user.language]['smth_went_wrong'])
             await clear(message, user)
@@ -73,36 +71,16 @@ async def code_handler(message: Message):
 
 @dp.message_handler()
 async def on_any(message: Message):
-    if message.from_user.id == bot.id:
-        return
-    user: User = get_user(id=message.from_user.id)
+    user: User = await get_user(id=message.from_user.id)
 
-    for record in storage:
-        if record['user'].id == user.id:
-            if record.get('action'):
-                await record['action'](*record['args'])
-            reply = record['event'](
-                user=user,
-                instance=message
-            ).execute()
-
-            if not reply[0]:
-                return
-
-            if reply[1] == 0:
-                await message.answer(
-                    text=reply[0]
-                )
-            else:
-                await message.answer(
-                    text=reply[0],
-                    reply_markup=reply[1]
-                )
-            if isinstance(record['event'], Activation):
-                if reply[2]:
-                    storage.remove(record)
-            else:
-                storage.remove(record)
+    for record in events_storage:
+        if record['user_id'] == user.id:
+            inst: Event = record['event'](user=user,
+                                   message=message,
+                                   id=record['id'],
+                                   **record['kwargs'] if record.get('kwargs') else None)
+            await inst.execute()
+            await inst.after()
             break
 
 
@@ -111,11 +89,11 @@ async def cancel_event(call: CallbackQuery):
     data = call.data
 
     position = data.split(':')[-1]
-    user: User = get_user(id=call.from_user.id)
+    user: User = await get_user(id=call.from_user.id)
 
     if position == 'menu':
         await call.message.edit_text(text[user.language]['welcome'].format(user=call.from_user.full_name))
-        await call.message.edit_reply_markup(menu(user.language))
+        await call.message.edit_reply_markup(main_menu(user.language))
 
 
 @dp.callback_query_handler(text_contains='menu')
@@ -123,7 +101,7 @@ async def menu_handler(call: CallbackQuery):
     data = call.data
 
     event = data.split(':')[-1]
-    user: User = get_user(id=call.from_user.id)
+    user: User = await get_user(id=call.from_user.id)
 
     if event == 'update_info':
         await call.message.edit_text(text[user.language]['sector_update'].format(
@@ -142,21 +120,14 @@ async def menu_handler(call: CallbackQuery):
 
             )
         ))
-        await call.message.edit_reply_markup(sector_update(user.language))
+        await call.message.edit_reply_markup(sector_update_menu(user.language))
     elif event == 'new_prac':
         if not user.group or not user.student_snp or not user.teacher_snp:
             await call.message.edit_text(text[user.language]['basic_info_did_not_pass'])
-            await call.message.edit_reply_markup(menu(user.language))
+            await call.message.edit_reply_markup(main_menu(user.language))
             return
         await call.message.edit_text(PracNum.request(user.language))
-        storage.append({
-            'user': user,
-            'event': Request(
-                user=user,
-                instance=call,
-                rtype=PracNum
-            )
-        })
+        new_event(event=Request, user_id=user.id, rtype=PracNum)
         try:
             await call.message.edit_reply_markup(None)
         except:
@@ -168,59 +139,57 @@ async def update_sector(call: CallbackQuery):
     data = call.data
 
     sector = data.split(':')[-1]
-    user: User = get_user(id=call.from_user.id)
+    user: User = await get_user(id=call.from_user.id)
 
     if sector == 'all':
-        storage.append({
-            'user': user,
-            'event': Request(
-                user=user,
-                instance=call,
-                rtype=All
-            )
-        })
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Group
+        )
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Student
+        )
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Teacher
+        )
         await call.message.edit_text(text[user.language]['group_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'group':
-        storage.append({
-            'user': user,
-            'event': Request(
-                user=user,
-                instance=call,
-                rtype=Group
-            )
-        })
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Group
+        )
         await call.message.edit_text(text[user.language]['group_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'student':
-        storage.append({
-            'user': user,
-            'event': Request(
-                user=user,
-                instance=call,
-                rtype=Student
-            )
-        })
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Student
+        )
         await call.message.edit_text(text[user.language]['student_snp_request'])
         try:
             await call.message.edit_reply_markup(None)
         except:
             pass
     elif sector == 'teacher':
-        storage.append({
-            'user': user,
-            'event': Request(
-                user=user,
-                instance=call,
-                rtype=Teacher
-            )
-        })
+        new_event(
+            event=Request,
+            user_id=user.id,
+            rtype=Teacher
+        )
         await call.message.edit_text(text[user.language]['teacher_snp_request'])
         try:
             await call.message.edit_reply_markup(None)
@@ -233,7 +202,7 @@ async def selecting_language(call: CallbackQuery):
     data = call.data
 
     lang = data.split(':')[-1].lower()
-    user: User = get_user(id=call.from_user.id)
+    user: User = await get_user(id=call.from_user.id)
 
     user.language = lang
     set_language(lang, user)
@@ -244,18 +213,11 @@ async def selecting_language(call: CallbackQuery):
     await call.answer(text=answer)
 
     if user.status == 'inactive':
-        storage.append({
-            'user': user,
-            'event': Activation
-        })
+        new_event(event=Activation, user_id=user.id)
         await call.message.edit_text(text=text[lang]['activate_text'], parse_mode='MarkdownV2')
         try:
             await call.message.edit_reply_markup(reply_markup=None)
         except:
             pass
-        storage.append({
-            'user': user,
-            'event': Activation
-        })
     else:
         await clear(call, user)

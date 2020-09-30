@@ -1,14 +1,24 @@
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from source.database import User
 
 
 class Event:
-    def __init__(self, **kwargs):
+    def __init__(self, id: int, call=None, message=None, user=None, **kwargs):
         self.name = 'Generic'
-        self.instance: Message = kwargs.get('instance')
-        self.user: User = kwargs.get('user')
+        self.message: Message = message
+        self.call: CallbackQuery = call
+        self.user: User = user
+        self.id = id
 
-    def execute(self):
+
+    async def execute(self):
+        pass
+
+    @staticmethod
+    async def before(message: Message, **kwargs):
+        pass
+
+    async def after(self):
         pass
 
     def __repr__(self):

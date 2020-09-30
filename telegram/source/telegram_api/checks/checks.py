@@ -14,4 +14,4 @@ def group_check(group: str) -> bool:
 
 
 def prac_check(prac_num: str) -> bool:
-    return bool(re.match(PracNum.regex()), prac_num)
+    return bool(re.match(PracNum.regex(), prac_num))

@@ -5,7 +5,7 @@ from source.database.apiUser import ApiUser
 
 
 class User(Base):
-    __tablename__ = 'telgram_users'
+    __tablename__ = 'telegram_users'
 
     id = Column(Integer, primary_key=True)
     vk_id = Column(Integer, ForeignKey(ApiUser.vk_user_id))
