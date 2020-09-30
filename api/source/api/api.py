@@ -92,7 +92,10 @@ def on_token_get():
     if code:
         access = json.loads(requests.get(
             f"https://oauth.vk.com/access_token?client_id=7609395&client_secret={config['app_secret']}&redirect_uri=https://icyftl.ru/ezgen/api/authorize&code=" + code).text)
-        add_user(access['user_id'], access['access_token'])
+        if get_user(vk_user_id=access['user_id']):
+            update_user(access['user_id'], access['access_token'])
+        else:
+            add_user(access['user_id'], access['access_token'])
         return generate_reply(True, access['access_token']), 200
     else:
         return generate_reply(False, 'Code arg is empty'), 400

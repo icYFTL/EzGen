@@ -19,3 +19,9 @@ def add_user(vk_user_id: int, token: str) -> User:
     _sess.commit()
 
     return _user
+
+def update_user(vk_user_id: int, token: str) -> None:
+    _sess = Session()
+    _sess.query(User).filter(User.vk_user_id == vk_user_id). \
+        update({'token': token}, synchronize_session=False)
+    _sess.commit()
