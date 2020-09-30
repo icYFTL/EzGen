@@ -3,7 +3,7 @@ import json
 import base64
 
 data = json.dumps({
-    'token': 'dd1c0d67fbe55db9042cc7855314448307d300fa73180839b91545cb64957c400301385fc9b8d672263d5',
+    'token': '',
     'group_name': 'ИКБО-12-19',
     'student_snp': 'Петров Петр Петрович',
     'teacher_snp': 'Иванов Иван Викторович',
