@@ -4,7 +4,7 @@
   "msg": {
     "en": {
       "selected_language": "Selected language: {lang}",
-      "activate_text": "Get the token from the [link](https://icyftl.ru/ezgen/api/get_token) and send me it",
+      "activate_text": "Get the token from the [link](https://vk.cc/aAhykD) and send me it",
       "activate_button": "Activation",
       "update_info_button": "Update my info",
       "invoke_new_prac_button": "Invoke new report",
@@ -35,7 +35,7 @@
     },
     "ru": {
       "selected_language": "Выбранный язык: {lang}",
-      "activate_text": "Получите токен перейдя по [ссылке](https://icyftl.ru/ezgen/api/get_token) и отправьте его мне",
+      "activate_text": "Получите токен перейдя по [ссылке](https://vk.cc/aAhykD) и отправьте его мне",
       "activate_button": "Активация",
       "update_info_button": "Изменить информацию о себе",
       "invoke_new_prac_button": "Создать новый отчет",
