@@ -3,6 +3,6 @@ FROM python:3 as ezgen_telegram
 RUN mkdir /opt/app
 WORKDIR /opt/app
 
-COPY config.json core.py EzGenTG.py requirements.txt ./
+COPY config.json core.py EzGenTG.py requirements.txt ../db_config.json ./
 COPY source ./source/
 RUN pip3 install -r requirements.txt
