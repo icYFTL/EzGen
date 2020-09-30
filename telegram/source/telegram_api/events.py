@@ -14,14 +14,16 @@ from source.static.methods import *
 @dp.message_handler(commands=['start'])
 async def on_start(message: Message):
     user: User = await get_user(message.chat.id)
-    if not user or user.status == 'inactive':
+    if not user:
         await add_user(id=message.from_user.id, chat_id=message.chat.id)
+        await message.answer(text=config['start_msg'], reply_markup=lang_choice)
+    elif user.status == 'inactive':
         await message.answer(text=config['start_msg'], reply_markup=lang_choice)
     else:
         await message.answer(text=text[user.language]['welcome'].format(user=message.from_user.full_name),
                              reply_markup=main_menu(
-            user.language
-        ))
+                                 user.language
+                             ))
 
 
 async def clear(instance, user: User) -> None:
@@ -75,10 +77,15 @@ async def on_any(message: Message):
 
     for record in events_storage:
         if record['user_id'] == user.id:
-            inst: Event = record['event'](user=user,
-                                   message=message,
-                                   id=record['id'],
-                                   **record['kwargs'] if record.get('kwargs') else None)
+            if record.get('kwargs'):
+                inst: Event = record['event'](user=user,
+                                              message=message,
+                                              id=record['id'],
+                                              **record['kwargs'])
+            else:
+                inst: Event = record['event'](user=user,
+                                              message=message,
+                                              id=record['id'])
             await inst.execute()
             await inst.after()
             break

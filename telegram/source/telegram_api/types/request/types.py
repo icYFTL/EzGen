@@ -15,7 +15,7 @@ class RType(object):
 class Token(RType):
     @staticmethod
     def regex() -> re:
-        return re.compile(r'^[a-z0-9]{32}$')
+        return re.compile(r'^[a-z0-9]{85}$')
 
     @staticmethod
     def request(lang: str) -> str:
