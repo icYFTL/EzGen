@@ -5,6 +5,8 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+cp ./db_config.json api/
+cp ./db_config.json telegram/
 sudo docker cp ezgen_api:/opt/app/tmp/ ./tmp
 
 docker-compose down
